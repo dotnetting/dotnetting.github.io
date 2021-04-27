@@ -3,7 +3,7 @@ title: "My First Post"
 date: 2021-04-26T18:36:24+01:00
 description: "This is a short description about my first post"
 tags: ["demo"]
-draft: true
+draft: false
 ---
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur non risus ut magna fringilla pretium. Sed lacinia augue a ex rhoncus, quis pellentesque eros congue. Etiam facilisis condimentum auctor. Vivamus et sagittis lorem, sit amet ultrices nunc. In hac habitasse platea dictumst. Curabitur commodo feugiat arcu, imperdiet mollis nisi efficitur sit amet. Sed porta purus a elit tincidunt varius. In ultrices congue erat, eget vulputate lorem vulputate id. Donec et odio eget ante aliquet rutrum. Etiam sit amet pretium ex. Praesent eget sapien scelerisque, fermentum libero aliquet, tincidunt neque.
