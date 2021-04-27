@@ -11,7 +11,7 @@ googleAnalytics = "G-VGT0SY9PT3" # Enable Google Analytics by entering your trac
   avatar = "img/avatar.jpg"
 
 [Params]
-  description = "John Doe's Personal blog about everything" # Site description. Used in meta description
+  description = "This blog is about Software Engineering, Cloud Computing, Distributed Systems and .NET/C#" # Site description. Used in meta description
   # copyright = "John Doe" # Footer copyright holder, otherwise will use site title
   opengraph = true # Enable OpenGraph if true
   schema = true # Enable Schema
