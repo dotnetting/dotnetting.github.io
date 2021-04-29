@@ -3,8 +3,11 @@ languageCode = "en-us"
 title = "dotNetting"
 paginate = "10" 
 theme="mainroad"
-disqusShortname = "dotnetting"
+# disqusShortname = "dotnetting"
 googleAnalytics = "G-VGT0SY9PT3" # Enable Google Analytics by entering your tracking id
+
+[permalinks]
+  posts = "/:year/:month/:title/"
 
 [Author] # Used in authorbox
   name = "Lester Sanchez"
@@ -19,7 +22,7 @@ googleAnalytics = "G-VGT0SY9PT3" # Enable Google Analytics by entering your trac
   twitter_cards = true # Enable Twitter Cards if true
   readmore = false # Show "Read more" button in list if true
   authorbox = true # Show authorbox at bottom of pages if true
-  toc = true # Enable Table of Contents
+  toc = false # Enable Table of Contents
   pager = true # Show pager navigation (prev/next links) at the bottom of pages if true
   post_meta = ["author", "date", "categories", "translations"] # Order of post meta information
   mainSections = ["posts", "blog", "news"] # Specify section pages to show on home page and the "Recent articles" widget
