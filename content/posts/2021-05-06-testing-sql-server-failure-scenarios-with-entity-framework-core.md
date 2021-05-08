@@ -5,7 +5,7 @@ description: "This post shows how to simulate failure scenarios using Entity Fra
 tags: ["ef core", "database", "interceptors", "csharp", ".net core", "sql server", "testing", "unit test", "resiliency"]
 draft: false
 ---
-One of the first things we learn about resiliency is that dependencies will fail at some point, and our applications must be prepared to deal graciously with these failures. What _graciously_ means will vary from app to app, but in all cases, this _gracious_ behaviour should be covered by some sort of tests. We have therefore to cover those failure scenarios to ensure our applications are resilient. In this post I will show you how to use **Interceptors** to simulate failures when using Entity Framework Core with relational databases like SQL Server. 
+One of the first things we learn about resiliency is that dependencies will fail at some point, and our applications must be prepared to deal gracefully with these failures. What _gracefully_ means will vary from app to app, but in all cases, this _graceful_ behaviour should be covered by some sort of tests. We have therefore to cover those failure scenarios to ensure our applications are resilient. In this post I will show you how to use **Interceptors** to simulate failures when using Entity Framework Core with relational databases like SQL Server. 
 
 ## Problem
 
@@ -205,6 +205,6 @@ public async Task AddMovieFails()
 
 ## Final thoughts
 
-EF Core Interceptors are not something you would use regularly in your Production code. However, for testing failure scenarios, Interpectors are a nice and easy way to simulate database errors. Note that this is compatible only with relational database providers such as SQL Server. Also note that writing tests to cover failure scenarios alone doesn't guarantee that your application is resilient, but not covering them guarantees unpredictable, generaly _ungracious_, behaviour when a dependency fails. 
+EF Core Interceptors are not something you would use regularly in your Production code. However, for testing failure scenarios, Interpectors are a nice and easy way to simulate database errors. Note that this is compatible only with relational database providers such as SQL Server. Also note that writing tests to cover failure scenarios alone doesn't guarantee that your application is resilient, but not covering them guarantees unpredictable, generaly _ungraceful_, behaviour when a dependency fails. 
 
-Keep _graciously_ dotnetting...
+Keep _gracefully_ dotnetting...
