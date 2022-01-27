@@ -1,0 +1,312 @@
+<!doctype html><html class=no-js lang=en>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<title>How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL - dotNetting</title>
+<script>(function(a,b){a[b]=a[b].replace("no-js","js")})(document.documentElement,"className")</script>
+<meta name=description content="This post shows how to set up a Windows development environment to run and debug .NET Core applications as containers inside WSL without requiring Docker Desktop installed on the host (Windows) development machine.">
+<meta property="og:title" content="How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL">
+<meta property="og:description" content="This post shows how to set up a Windows development environment to run and debug .NET Core applications as containers inside WSL without requiring Docker Desktop installed on the host (Windows) development machine.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://dotnetting.net/2022/01/how-to-use-visual-studio-without-docker-desktop-to-debug-a-.net-core-application-running-in-a-container-inside-wsl/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2022-01-26T00:00:00+00:00">
+<meta property="article:modified_time" content="2022-01-26T00:00:00+00:00">
+<meta itemprop=name content="How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL">
+<meta itemprop=description content="This post shows how to set up a Windows development environment to run and debug .NET Core applications as containers inside WSL without requiring Docker Desktop installed on the host (Windows) development machine."><meta itemprop=datePublished content="2022-01-26T00:00:00+00:00">
+<meta itemprop=dateModified content="2022-01-26T00:00:00+00:00">
+<meta itemprop=wordCount content="1500">
+<meta itemprop=keywords content="docker,.net core,wsl,wsl2,docker desktop,linux,windows,vs2022,remote debugging,visual studio,">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL">
+<meta name=twitter:description content="This post shows how to set up a Windows development environment to run and debug .NET Core applications as containers inside WSL without requiring Docker Desktop installed on the host (Windows) development machine.">
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link rel=dns-prefetch href=//fonts.googleapis.com>
+<link rel=dns-prefetch href=//fonts.gstatic.com>
+<link rel=stylesheet href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+<link rel=stylesheet href=/css/style.css>
+<link rel=stylesheet href=/css/custom.css>
+<link rel="shortcut icon" href=/favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGT0SY9PT3"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-VGT0SY9PT3',{anonymize_ip:!1})}</script>
+</head>
+<body class=body>
+<div class="container container--outer">
+<header class=header>
+<div class="container header__container">
+<div class=logo>
+<a class=logo__link href=/ title=dotNetting rel=home>
+<div class="logo__item logo__text">
+<div class=logo__title>dotNetting</div>
+<div class=logo__tagline>netting the cloud with C#</div>
+</div>
+</a>
+</div>
+<div class=divider></div>
+</div>
+</header>
+<div class="wrapper flex">
+<div class=primary>
+<main class=main role=main>
+<article class=post>
+<header class=post__header>
+<h1 class=post__title>How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL</h1>
+<div class="post__meta meta"><div class="meta__item-author meta__item">
+<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2.0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class=meta__text>Lester Sanchez</span>
+</div>
+<div class="meta__item-datetime meta__item">
+<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class=meta__text datetime=2022-01-26T00:00:00Z>2022-01-26</time></div></div>
+</header><div class="content post__content clearfix">
+<p>As <a href=https://www.docker.com/blog/the-grace-period-for-the-docker-subscription-service-agreement-ends-soon-heres-what-you-need-to-know/>the grace period to use Docker Desktop for free is coming to an end</a>, organisations are looking into alternatives to retain much of the convenience <strong>Docker Desktop</strong> offers, without incurring in the extra costs. One of that convenience is the seamless integration between <strong>Visual Studio 2022</strong> (and some previous versions) and docker engine allowing to run and debug applications as naturally as if we were running and debugging them natively on the host. In this post I will show you how I did configure my development environment to run .NET Core applications inside a container running on WSL and debug those applications from Visual Studio running on Windows. It involves some manual setup and configuration, some of them a one-off, and some others every time we want to run and debug our applications.</p>
+<p>There is a lot of information out there about how to debug applications running <em>natively</em> in WSL, using Visual Studio; but little and fragmented information about how to debug using Visual Studio (not Visual Studio Code) when the applications are running in a container, in WSL, without having Docker Desktop installed in the host (Windows) machine. This is why I decided to write this post, that hopefully makes it easier for others with similar needs.</p>
+<blockquote>
+<p>This solution works for Windows but could potentially also work for Mac but I haven&rsquo;t tested it. If you try, leave a comment below to help other readers.</p>
+</blockquote>
+<h2 id=prerequisites>Prerequisites</h2>
+<ol>
+<li><a href=https://docs.microsoft.com/en-us/windows/wsl/install>WSL2</a> (if you are using <strong>Docker Desktop</strong>, more likely you have this already installed)</li>
+<li>Linux distribution on WSL2 (I tested this on <a href=https://www.microsoft.com/en-gb/p/ubuntu-2004-lts/9n6svws3rx71>Ubuntu 20.04</a> and Ubuntu 18.04)</li>
+<li><a href=https://visualstudio.microsoft.com/downloads>Visual Studio 2022</a> (should also work with VS 2019 - not tested)</li>
+<li>Some familiarity with <code>docker</code> and <code>docker-compose</code> tooling.</li>
+</ol>
+<h2 id=install-docker-tools-on-wsl2-one-off-setup>Install Docker tools on WSL2 (one-off setup)</h2>
+<h3 id=uninstall-older-versions>Uninstall older versions</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo apt-get remove docker docker-engine docker.io containerd runc
+</code></pre></div><h3 id=set-up-new-repository>Set up new repository</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo apt-get install <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    apt-transport-https <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    ca-certificates <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    curl <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    gnupg <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>    lsb-release
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>echo <span style=color:#ae81ff>\
+</span><span style=color:#ae81ff></span>  <span style=color:#e6db74>&#34;deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+</span><span style=color:#e6db74>  </span><span style=color:#66d9ef>$(</span>lsb_release -cs<span style=color:#66d9ef>)</span><span style=color:#e6db74> stable&#34;</span> | sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+</code></pre></div><h3 id=install-packages>Install Packages</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-compose
+</code></pre></div><h3 id=configure>Configure</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo usermod -aG docker &lt;your-username-here&gt;
+</code></pre></div><h3 id=start-docker-service>Start Docker Service</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo service docker start
+</code></pre></div><h3 id=check-docker-has-been-successfully-installed>Check Docker has been successfully installed</h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker run hello-world
+</code></pre></div><p>You should see an output similar to this</p>
+<pre tabindex=0><code>Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+2db29710123e: Pull complete
+Digest: sha256:507ecde44b8eb741278274653120c2bf793b174c06ff4eaa672b713b3263477b
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+</code></pre><h2 id=enable-ssh-on-wsl2-one-off-setup>Enable SSH on WSL2 (one-off setup)</h2>
+<p>SSH server should come installed by default in your distro, but you might need to tweak it to allow remote connections.
+This is required to enable remote debugging from Visual Studio.</p>
+<p><a href=https://www.illuminiastudios.com/dev-diaries/ssh-on-windows-subsystem-for-linux/>Install and configure SSH</a></p>
+<p>If you see this error when starting the <code>ssh</code> service</p>
+<pre tabindex=0><code>sshd: no hostkeys available -- exiting
+</code></pre><p>Run the following command and try again</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>sudo ssh-keygen -A
+</code></pre></div><p>With the <code>ssh</code> service successfully running on Linux, you should now be able to connect to WSL distro via SSH from Windows Powershell, by running following command</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-powershell data-lang=powershell>ssh &lt;your-username&gt;@&lt;wsl-ip-address&gt;
+</code></pre></div><p>To find the IP address of your Linux distro running on WSL, run the following command from Powershell</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-powershell data-lang=powershell>wsl hostname -I
+</code></pre></div><p>Or following command from Linux</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>ip addr | grep eth0
+</code></pre></div><h2 id=clone-demo-repository>Clone demo repository</h2>
+<p>This step is only required to validate your setup. This is not part of the regular steps you will need to carry on when working on your own projects.
+You should replace this by your own repository during your regular development workflow.</p>
+<pre tabindex=0><code>https://github.com/dotnetting/demo-vs-debug-container-wsl
+</code></pre><p>You will notice the <code>docker-compose.yml</code> file</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#39;3.4&#39;</span>
+
+<span style=color:#f92672>services</span>:
+  <span style=color:#f92672>weatherapi</span>:
+    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>demo-weatherapi</span>
+    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>registry/org/weatherapi</span>
+    <span style=color:#f92672>build</span>:
+      <span style=color:#f92672>context</span>: <span style=color:#ae81ff>.</span>
+      <span style=color:#f92672>dockerfile</span>: <span style=color:#ae81ff>DemoWebApi/Dockerfile</span>
+    <span style=color:#f92672>ports</span>:
+      - <span style=color:#e6db74>&#39;5015:80&#39;</span>
+    <span style=color:#f92672>environment</span>:
+      - <span style=color:#ae81ff>ASPNETCORE_ENVIRONMENT=Development</span>
+      - <span style=color:#ae81ff>ASPNETCORE_URLS=http://+:80</span>
+</code></pre></div><p>Note that local port <code>5015</code> in the host (Windows) is mapped to the port <code>80</code> inside the container.</p>
+<p>And the <code>Dockerfile</code> file inside the <code>DemoWebApi</code> directory, generated by Visual Studio, unmodified.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dockerfile data-lang=dockerfile><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> mcr.microsoft.com/dotnet/aspnet:6.0 AS base</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /app</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>EXPOSE</span><span style=color:#e6db74> 80</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> mcr.microsoft.com/dotnet/sdk:6.0 AS build</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /src</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> <span style=color:#f92672>[</span><span style=color:#e6db74>&#34;DemoWebApi/DemoWebApi.csproj&#34;</span>, <span style=color:#e6db74>&#34;DemoWebApi/&#34;</span><span style=color:#f92672>]</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> dotnet restore <span style=color:#e6db74>&#34;DemoWebApi/DemoWebApi.csproj&#34;</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> . .<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> &#34;/src/DemoWebApi&#34;</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> dotnet build <span style=color:#e6db74>&#34;DemoWebApi.csproj&#34;</span> -c Release -o /app/build<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> build AS publish</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> dotnet publish <span style=color:#e6db74>&#34;DemoWebApi.csproj&#34;</span> -c Release -o /app/publish<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> base AS final</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /app</span><span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> --from<span style=color:#f92672>=</span>publish /app/publish .<span style=color:#960050;background-color:#1e0010>
+</span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENTRYPOINT</span> [<span style=color:#e6db74>&#34;dotnet&#34;</span>, <span style=color:#e6db74>&#34;DemoWebApi.dll&#34;</span>]<span style=color:#960050;background-color:#1e0010>
+</span></code></pre></div><h2 id=run-container-in-wsl>Run container in WSL</h2>
+<p>In Linux, change the path to the directory where you cloned the repository that contains the <code>docker-compose.yaml</code> file, and run the following command. In my case that was <code>/mnt/c/Users/lester.sanchez/source/repos/DemoWebApi</code> but yours will be different.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker-compose up
+</code></pre></div><p>This will build the image from the <code>Dockerfile</code> file and start the container with the application listening on port <code>80</code>.</p>
+<p>If everything goes fine, you should see some logs from the app as following</p>
+<pre tabindex=0><code>demo-weatherapi | {&quot;EventId&quot;:14,&quot;LogLevel&quot;:&quot;Information&quot;,&quot;Category&quot;:&quot;Microsoft.Hosting.Lifetime&quot;,&quot;Message&quot;:&quot;Now listening on: http://[::]:80&quot;,&quot;State&quot;:{&quot;Message&quot;:&quot;Now listening on: http://[::]:80&quot;,&quot;address&quot;:&quot;http://[::]:80&quot;,&quot;{OriginalFormat}&quot;:&quot;Now listening on: {address}&quot;}}
+</code></pre><p>To check the application is accessible from the host (Windows), open a browser and navigate to <code>http://localhost:5015/swagger/</code>. As port <code>5015</code> is mapped to port <code>80</code> inside the container, the application should receive the request and you should see the Swagger UI. You can now send a request to the <code>WeatherForcast</code> endpoint using swagger and should get a successful response back from the app.</p>
+<p><img src=/img/20220126/43GUkFx1EZ.png alt="Swagger UI"></p>
+<blockquote>
+<p>Running the app on port <code>443</code> (HTTPS/SSL) is out of the scope of this article and it would require configuring and trusting the dotnet self-signed certificate.</p>
+</blockquote>
+<h2 id=attach-debugger-to-the-running-container>Attach Debugger to the running container</h2>
+<h3 id=allow-visual-studio-to-load-debug-symbols-one-off-setup>Allow Visual Studio to load debug symbols (one-off setup)</h3>
+<p>Disable following option to allow Visual Studio to load debug symbols for your app running in a container</p>
+<pre tabindex=0><code>Tools &gt; Options &gt; Debug &gt; Just My Code
+</code></pre><h3 id=make-sure-container-is-running>Make sure container is running</h3>
+<p>Check the container(s) with the apps to be debugged are running in WSL. You can check this by running this command</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>docker ps
+</code></pre></div><p>And should see an output including the name of your container(s); using the example code in this post, that should be <code>demo-weatherapi</code>.</p>
+<h3 id=attach-debugger-to-container>Attach debugger to container</h3>
+<ol>
+<li>
+<p>Open the solution in Visual Studio; do not try to run or debug via F5 or the green arrow, it won&rsquo;t work this way; your application is already running in WSL, as a container.</p>
+</li>
+<li>
+<p>Set a breakpoint in the code where you want the execution to stop, in this example this is in the <code>WeatherForecast</code> controller.</p>
+</li>
+<li>
+<p>Go to <code>Debug > Attach to process...</code></p>
+</li>
+<li>
+<p>In the <code>Connection type</code> dropdown, select <code>Docker (Linux Container)</code></p>
+</li>
+</ol>
+<p><img src=/img/20220126/bLEl8l4MIt.png alt="Connection type Docker Linux"></p>
+<ol start=5>
+<li>In the <code>Connection target</code>, select the container you want to debug, and jump to step 7. If not there, click the <code>Find</code> button, and then select <code>Docker CLI host</code> where your container is running. If not in that list, click <code>Add...</code> and enter your WSL distro details to connect via <code>ssh</code>.</li>
+</ol>
+<p><img src=/img/20220126/iTUgI2zaTp.png alt="SSH Connection"></p>
+<ol start=6>
+<li>Select container to debug, in our case <code>demo-weatherapi</code></li>
+</ol>
+<p><img src=/img/20220126/Z1NF9TStWh.png alt=Container></p>
+<ol start=7>
+<li>Click <code>Attach</code> and select <code>Managed</code> code type when asked</li>
+</ol>
+<p><img src=/img/20220126/KD5QqhJf5n.png alt="Managed code type"></p>
+<ol start=8>
+<li>
+<p>Send a request via Swagger (or any other tool) to the <code>WeatherForecast</code> GET endpoint, in our case <code>http://localhost:5015/WeatherForecast</code>.</p>
+</li>
+<li>
+<p>Execution should stop at the breakpoint</p>
+</li>
+</ol>
+<p><img src=/img/20220126/5pvjlBbcsc.png alt=Breakpoint></p>
+<blockquote>
+<p>You will need to set up a new ssh connection in Visual Studio, when attaching to process, every time you restart your WSL distro, as a new IP address will be assigned every time it starts.</p>
+</blockquote>
+<h2 id=uninstall-docker-desktop>Uninstall Docker Desktop</h2>
+<p>If you are happy with the manual process described here and find it compatible with your development workflow, you should now uninstall <strong>Docker Desktop</strong>, as it is no longer needed. You can now rely on docker installed on the WSL distribution for all your local development and testing needs.</p>
+<h2 id=summary>Summary</h2>
+<p><strong>Docker Desktop</strong> provides an undeniable convenience, at a price, for teams (personal usage remains free at the time of writing this post). If your team can afford it, and it brings value to your development workflow, you should probably pay for the licence.</p>
+<p>In summary, these are the steps you need to follow every time you need to run and debug an application running in a container in WSL.</p>
+<ol>
+<li>Log into your WSL distro.</li>
+<li>Make sure <code>ssh</code> and <code>docker</code> services are running.</li>
+<li>Change the path to the directory that contains your <code>docker-compose.yaml</code> file.</li>
+<li>Run <code>docker-compose up -d</code> to bring all the containers up. The <code>-d</code> flag is optional, in case you want to the get back the bash prompt, it means <em>dettached mode</em>.</li>
+<li>(Optional) If your container is a Web App or API, open a browser in Windows to check you can access it.</li>
+<li>In Windows, open your project in Visual Studio (do not try to run the project from VS, it won&rsquo;t work).</li>
+<li>In Visual Studio, go to <code>Debug > Attach to process...</code> and attach the debuger to the container running your application. You may need to setup a new SSH connection every time you restart you WSL distro, as the IP can change.</li>
+<li>Use your applications, the execution should stop at the breakpoints you set.</li>
+<li>When you are done, run <code>docker-compose down</code> in WSL, to tear down the container(s).</li>
+</ol>
+<p>This post only shows the basic minimum configuration and steps required to run and debug containers in WSL from Visual Studio <strong>without Docker Desktop</strong>. If your use case is more complex than the one presented here, you may need to do additional configuration and steps to this process; or it may be not suitable for your team altogether.</p>
+<p>Keep dotnetting&mldr;</p>
+</div>
+<footer class=post__footer>
+<div class="post__tags tags clearfix"><svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5.0 11V3C0 1.5.8.8.8.8S1.5.0 3 0h8c1.5.0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 100-6 3 3 0 000 6z"/></svg>
+<ul class=tags__list>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/docker/ rel=tag>docker</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/.net-core/ rel=tag>.net core</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/wsl/ rel=tag>wsl</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/wsl2/ rel=tag>wsl2</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/docker-desktop/ rel=tag>docker desktop</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/linux/ rel=tag>linux</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/windows/ rel=tag>windows</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/vs2022/ rel=tag>vs2022</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/remote-debugging/ rel=tag>remote debugging</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/visual-studio/ rel=tag>visual studio</a>
+</li>
+</ul>
+</div>
+</footer>
+</article>
+</main>
+<div class="authorbox clearfix">
+<figure class=authorbox__avatar>
+<img alt="Lester Sanchez avatar" src=/img/avatar.jpg class=avatar height=90 width=90>
+</figure>
+<div class=authorbox__header>
+<span class=authorbox__name>About Lester Sanchez</span>
+</div>
+<div class=authorbox__description>
+I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too.
+</div>
+</div>
+<nav class="pager flex">
+<div class="pager__item pager__item--prev">
+<a class=pager__link href=/2021/05/testing-simulate-database-failures-using-ef-core-interceptors/ rel=prev>
+<span class=pager__subtitle>«&#8201;Previous</span>
+<p class=pager__title>Testing: Simulate database failures using EF Core Interceptors</p>
+</a>
+</div>
+</nav>
+<section class=comments>
+<div id=disqus_thread></div>
+<script type=application/javascript>var disqus_config=function(){};(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('disqus_thread').innerHTML='Disqus comments not available by default when the website is previewed locally.';return}var b=document,a=b.createElement('script');a.async=!0,a.src='//dotnetting.disqus.com/embed.js',a.setAttribute('data-timestamp',+new Date),(b.head||b.body).appendChild(a)})()</script>
+<noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript>
+<a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a>
+</section>
+</div>
+</div>
+<footer class=footer>
+<div class="container footer__container flex">
+<div class=footer__copyright>
+&copy; 2022 dotNetting.
+<span class=footer__copyright-credits>Generated with <a href=https://gohugo.io/ rel="nofollow noopener" target=_blank>Hugo</a> and <a href=https://github.com/Vimux/Mainroad/ rel="nofollow noopener" target=_blank>Mainroad</a> theme.</span>
+</div>
+</div>
+</footer>
+</div>
+<script async defer src=/js/menu.js></script>
+</body>
+</html>

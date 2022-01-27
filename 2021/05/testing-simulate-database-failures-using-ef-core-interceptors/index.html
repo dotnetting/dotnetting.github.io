@@ -1,4 +1,69 @@
-<!doctype html><html class=no-js lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><title>Testing: Simulate database failures using EF Core Interceptors - dotNetting</title><script>(function(a,b){a[b]=a[b].replace("no-js","js")})(document.documentElement,"className")</script><meta name=description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."><meta property="og:title" content="Testing: Simulate database failures using EF Core Interceptors"><meta property="og:description" content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."><meta property="og:type" content="article"><meta property="og:url" content="https://dotnetting.net/2021/05/testing-simulate-database-failures-using-ef-core-interceptors/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-05-06T00:00:00+00:00"><meta property="article:modified_time" content="2021-05-06T00:00:00+00:00"><meta itemprop=name content="Testing: Simulate database failures using EF Core Interceptors"><meta itemprop=description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."><meta itemprop=datePublished content="2021-05-06T00:00:00+00:00"><meta itemprop=dateModified content="2021-05-06T00:00:00+00:00"><meta itemprop=wordCount content="1094"><meta itemprop=keywords content="ef core,database,interceptors,csharp,.net core,sql server,testing,unit test,resiliency,"><meta name=twitter:card content="summary"><meta name=twitter:title content="Testing: Simulate database failures using EF Core Interceptors"><meta name=twitter:description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link rel=dns-prefetch href=//fonts.googleapis.com><link rel=dns-prefetch href=//fonts.gstatic.com><link rel=stylesheet href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700"><link rel=stylesheet href=/css/style.css><link rel=stylesheet href=/css/custom.css><link rel="shortcut icon" href=/favicon.ico><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGT0SY9PT3"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-VGT0SY9PT3',{anonymize_ip:!1})}</script></head><body class=body><div class="container container--outer"><header class=header><div class="container header__container"><div class=logo><a class=logo__link href=/ title=dotNetting rel=home><div class="logo__item logo__text"><div class=logo__title>dotNetting</div><div class=logo__tagline>netting the cloud with C#</div></div></a></div><div class=divider></div></div></header><div class="wrapper flex"><div class=primary><main class=main role=main><article class=post><header class=post__header><h1 class=post__title>Testing: Simulate database failures using EF Core Interceptors</h1><div class="post__meta meta"><div class="meta__item-author meta__item"><svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2.0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class=meta__text>Lester Sanchez</span></div><div class="meta__item-datetime meta__item"><svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class=meta__text datetime=2021-05-06T00:00:00Z>2021-05-06</time></div></div></header><div class="content post__content clearfix"><p>One of the first things we learn about resiliency is that dependencies will fail at some point, and our applications must be prepared to deal gracefully with these failures. What <em>gracefully</em> means will vary from app to app, but in all cases, this <em>graceful</em> behaviour should be covered by some sort of tests. We have therefore to cover those failure scenarios to ensure our applications are resilient. In this post I will show you how to use <strong>Interceptors</strong> to simulate failures when using Entity Framework Core with relational databases like SQL Server.</p><h2 id=problem>Problem</h2><p>Very often we need to test code that depends on database access. As with any other dependency, databases can fail, making our application to fail if those failure situations are not properly handled. One way to ensure our app handle those failure cases properly is writting some tests that simulate these failling conditions. Let&rsquo;s see one way of doing it using Entity Framework Core (EF Core). I will not show you here how to write resilient code, this is out of the scope of this post. I will show you though, how to simulate database failures using EF Core so you can create tests that ensure your application is resilient.</p><h2 id=solution>Solution</h2><p>EF Core 3.0 introduced <a href=https://docs.microsoft.com/en-us/ef/core/logging-events-diagnostics/interceptors>Interceptors</a> as a way to intercept, modify and suppress EF Core operations. This is particularly handy to simulate a failure when executing low-level database operations against data such as <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code> and <code>DELETE</code>.</p><p>Let&rsquo;s imagine we have to implement a service to manage Movies. The service implementation would look like as</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieService</span>
+<!doctype html><html class=no-js lang=en>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<title>Testing: Simulate database failures using EF Core Interceptors - dotNetting</title>
+<script>(function(a,b){a[b]=a[b].replace("no-js","js")})(document.documentElement,"className")</script>
+<meta name=description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers.">
+<meta property="og:title" content="Testing: Simulate database failures using EF Core Interceptors">
+<meta property="og:description" content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://dotnetting.net/2021/05/testing-simulate-database-failures-using-ef-core-interceptors/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2021-05-06T00:00:00+00:00">
+<meta property="article:modified_time" content="2021-05-06T00:00:00+00:00">
+<meta itemprop=name content="Testing: Simulate database failures using EF Core Interceptors">
+<meta itemprop=description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."><meta itemprop=datePublished content="2021-05-06T00:00:00+00:00">
+<meta itemprop=dateModified content="2021-05-06T00:00:00+00:00">
+<meta itemprop=wordCount content="1094">
+<meta itemprop=keywords content="ef core,database,interceptors,csharp,.net core,sql server,testing,unit test,resiliency,">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Testing: Simulate database failures using EF Core Interceptors">
+<meta name=twitter:description content="This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers.">
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link rel=dns-prefetch href=//fonts.googleapis.com>
+<link rel=dns-prefetch href=//fonts.gstatic.com>
+<link rel=stylesheet href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700">
+<link rel=stylesheet href=/css/style.css>
+<link rel=stylesheet href=/css/custom.css>
+<link rel="shortcut icon" href=/favicon.ico>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGT0SY9PT3"></script>
+<script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-VGT0SY9PT3',{anonymize_ip:!1})}</script>
+</head>
+<body class=body>
+<div class="container container--outer">
+<header class=header>
+<div class="container header__container">
+<div class=logo>
+<a class=logo__link href=/ title=dotNetting rel=home>
+<div class="logo__item logo__text">
+<div class=logo__title>dotNetting</div>
+<div class=logo__tagline>netting the cloud with C#</div>
+</div>
+</a>
+</div>
+<div class=divider></div>
+</div>
+</header>
+<div class="wrapper flex">
+<div class=primary>
+<main class=main role=main>
+<article class=post>
+<header class=post__header>
+<h1 class=post__title>Testing: Simulate database failures using EF Core Interceptors</h1>
+<div class="post__meta meta"><div class="meta__item-author meta__item">
+<svg class="meta__icon icon icon-author" width="16" height="16" viewBox="0 0 12 16"><path d="M6 1c2.2.0 3.5 2 3.5 4.5C9.5 7 8.9 8.2 8 9c2.9.8 4 2.5 4 5v1H0v-1c0-2.5 1.1-4.2 4-5-.9-.8-1.5-2-1.5-3.5C2.5 3 3.8 1 6 1z"/></svg><span class=meta__text>Lester Sanchez</span>
+</div>
+<div class="meta__item-datetime meta__item">
+<svg class="meta__icon icon icon-time" width="16" height="14" viewBox="0 0 30 28"><path d="M15 0C7 0 1 6 1 14s6 14 14 14 14-6 14-14S23 0 15 0zm0 25C9 25 4 20 4 14S9 3 15 3s11 5 11 11-5 11-11 11zm1-18h-2v8.4l6.8 4.4L22 18l-6-3.8V7z"/></svg><time class=meta__text datetime=2021-05-06T00:00:00Z>2021-05-06</time></div></div>
+</header><div class="content post__content clearfix">
+<p>One of the first things we learn about resiliency is that dependencies will fail at some point, and our applications must be prepared to deal gracefully with these failures. What <em>gracefully</em> means will vary from app to app, but in all cases, this <em>graceful</em> behaviour should be covered by some sort of tests. We have therefore to cover those failure scenarios to ensure our applications are resilient. In this post I will show you how to use <strong>Interceptors</strong> to simulate failures when using Entity Framework Core with relational databases like SQL Server.</p>
+<h2 id=problem>Problem</h2>
+<p>Very often we need to test code that depends on database access. As with any other dependency, databases can fail, making our application to fail if those failure situations are not properly handled. One way to ensure our app handle those failure cases properly is writting some tests that simulate these failling conditions. Let&rsquo;s see one way of doing it using Entity Framework Core (EF Core). I will not show you here how to write resilient code, this is out of the scope of this post. I will show you though, how to simulate database failures using EF Core so you can create tests that ensure your application is resilient.</p>
+<h2 id=solution>Solution</h2>
+<p>EF Core 3.0 introduced <a href=https://docs.microsoft.com/en-us/ef/core/logging-events-diagnostics/interceptors>Interceptors</a> as a way to intercept, modify and suppress EF Core operations. This is particularly handy to simulate a failure when executing low-level database operations against data such as <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code> and <code>DELETE</code>.</p>
+<p>Let&rsquo;s imagine we have to implement a service to manage Movies. The service implementation would look like as</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieService</span>
 {
     <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> MovieDbContext <span style=color:#ae81ff>_d</span>bContext;
 
@@ -15,7 +80,8 @@
 
     <span style=color:#75715e>// Other methods
 </span><span style=color:#75715e></span>}
-</code></pre></div><p>And the <code>MovieDbContext</code> can be something like this</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieDbContext</span> : DbContext
+</code></pre></div><p>And the <code>MovieDbContext</code> can be something like this</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieDbContext</span> : DbContext
 {
     <span style=color:#66d9ef>public</span> MovieDbContext(DbContextOptions&lt;MovieDbContext&gt; options) : <span style=color:#66d9ef>base</span>(options) { }
     <span style=color:#66d9ef>public</span> DbSet&lt;Movie&gt; Movies { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
@@ -27,7 +93,8 @@
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>string</span> Title { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>int</span> Year { <span style=color:#66d9ef>get</span>; <span style=color:#66d9ef>set</span>; }
 }
-</code></pre></div><p>Now, we want to add some tests to cover the class <code>MovieService</code>, including the scenarios when the underlying database fails. Let&rsquo;s first introduce a simple test, and the boilerplate code to create an instance of <code>MovieDbContext</code> for our tests. I&rsquo;m using SQLite in-memory for my Unit Tests following the <a href=https://docs.microsoft.com/en-us/ef/core/testing/#approach-2-sqlite>best practices recommended by Microsoft</a>. It is fast, convenient and it is relational. Testing against the same database system your code will run in Production would be the preferred option, but not always possible. This is where SQLite presents itself as a good compromise. It is important you understand the tradeoffs when using it, though.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieServiceTests</span> : IDisposable
+</code></pre></div><p>Now, we want to add some tests to cover the class <code>MovieService</code>, including the scenarios when the underlying database fails. Let&rsquo;s first introduce a simple test, and the boilerplate code to create an instance of <code>MovieDbContext</code> for our tests. I&rsquo;m using SQLite in-memory for my Unit Tests following the <a href=https://docs.microsoft.com/en-us/ef/core/testing/#approach-2-sqlite>best practices recommended by Microsoft</a>. It is fast, convenient and it is relational. Testing against the same database system your code will run in Production would be the preferred option, but not always possible. This is where SQLite presents itself as a good compromise. It is important you understand the tradeoffs when using it, though.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MovieServiceTests</span> : IDisposable
 {
     <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> DbConnection <span style=color:#ae81ff>_</span>keepAliveConnection;
 
@@ -68,7 +135,9 @@
         <span style=color:#66d9ef>return</span> dbContext;
     }
 }
-</code></pre></div><p>With those testing foundations in place, now we can write some tests to cover the scenario when the underlying database fails. One easy way of doing this is extending from the class <a href=https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.dbcommandinterceptor><code>DbCommandInterceptor</code></a> that already implements the interface <a href=https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.iinterceptor><code>IInterceptor</code></a>, and just override the relevant method to force the desired error.</p><p>Let&rsquo;s say we want to test the case when an error occurs at the database when adding a new movie. In that case, we could throw an exception just before executing the <code>INSERT</code> command. One way to achieve this would be as follows.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MockFailCommandInterceptor</span> : DbCommandInterceptor
+</code></pre></div><p>With those testing foundations in place, now we can write some tests to cover the scenario when the underlying database fails. One easy way of doing this is extending from the class <a href=https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.dbcommandinterceptor><code>DbCommandInterceptor</code></a> that already implements the interface <a href=https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.diagnostics.iinterceptor><code>IInterceptor</code></a>, and just override the relevant method to force the desired error.</p>
+<p>Let&rsquo;s say we want to test the case when an error occurs at the database when adding a new movie. In that case, we could throw an exception just before executing the <code>INSERT</code> command. One way to achieve this would be as follows.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MockFailCommandInterceptor</span> : DbCommandInterceptor
 {
     <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>override</span> ValueTask&lt;InterceptionResult&lt;DbDataReader&gt;&gt; ReaderExecutingAsync(DbCommand command, CommandEventData eventData, InterceptionResult&lt;DbDataReader&gt; result,
         CancellationToken cancellationToken = <span style=color:#66d9ef>new</span> CancellationToken())
@@ -82,7 +151,8 @@
         <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>base</span>.ReaderExecutingAsync(command, eventData, result, cancellationToken);
     }
 }
-</code></pre></div><p>Now we have an interceptor that will throw an exception every time a command that starts with <em>INSERT</em> is about to be passed to the underlying database. Because we want this failure just in some tests, not all, we have to selectively decide whether or not to use this interceptor. For that, we will modify the method that creates the <code>MovieDbContext</code> to receive the interceptor.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> MovieDbContext CreateMovieDbContext(DbConnection connection, <span style=color:#66d9ef>params</span> IInterceptor[] interceptors)
+</code></pre></div><p>Now we have an interceptor that will throw an exception every time a command that starts with <em>INSERT</em> is about to be passed to the underlying database. Because we want this failure just in some tests, not all, we have to selectively decide whether or not to use this interceptor. For that, we will modify the method that creates the <code>MovieDbContext</code> to receive the interceptor.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>static</span> MovieDbContext CreateMovieDbContext(DbConnection connection, <span style=color:#66d9ef>params</span> IInterceptor[] interceptors)
 {
     <span style=color:#66d9ef>var</span> optionsBuilder = <span style=color:#66d9ef>new</span> DbContextOptionsBuilder&lt;MovieDbContext&gt;()
         .UseSqlite(connection);
@@ -98,7 +168,8 @@
 
     <span style=color:#66d9ef>return</span> dbContext;
 }
-</code></pre></div><p>Now, if we don&rsquo;t pass any interceptors to this method, like in the previous test <code>AddMovieSucceeds</code>, EF Core will hand the queries directly to the provider; normal behavior. That would allow us to test all the cases when the database doesn&rsquo;t fail. But this also allows us to inject an instance of <code>MockFailCommandInterceptor</code> when we want to test a database failure.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#a6e22e>[Fact]</span>
+</code></pre></div><p>Now, if we don&rsquo;t pass any interceptors to this method, like in the previous test <code>AddMovieSucceeds</code>, EF Core will hand the queries directly to the provider; normal behavior. That would allow us to test all the cases when the database doesn&rsquo;t fail. But this also allows us to inject an instance of <code>MockFailCommandInterceptor</code> when we want to test a database failure.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#a6e22e>[Fact]</span>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task AddMovieFails()
 {
     <span style=color:#66d9ef>var</span> dbContext = CreateMovieDbContext(<span style=color:#ae81ff>_</span>keepAliveConnection, <span style=color:#66d9ef>new</span> MockFailCommandInterceptor());
@@ -111,7 +182,8 @@
             Year = <span style=color:#ae81ff>1990</span>
         }));
 }
-</code></pre></div><p>We can make the <code>MockFailCommandInterceptor</code> class more versatile having a constructor that receives a predicate <code>Func&lt;DbCommand, bool></code> to decide when to throw, and also the actual exception to throw.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MockFailCommandInterceptor</span> : DbCommandInterceptor
+</code></pre></div><p>We can make the <code>MockFailCommandInterceptor</code> class more versatile having a constructor that receives a predicate <code>Func&lt;DbCommand, bool></code> to decide when to throw, and also the actual exception to throw.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#66d9ef>public</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>MockFailCommandInterceptor</span> : DbCommandInterceptor
 {
     <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> Func&lt;DbCommand, <span style=color:#66d9ef>bool</span>&gt; <span style=color:#ae81ff>_</span>predicate;
     <span style=color:#66d9ef>private</span> <span style=color:#66d9ef>readonly</span> Exception <span style=color:#ae81ff>_</span>ex;
@@ -127,7 +199,8 @@
         <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>base</span>.ReaderExecutingAsync(command, eventData, result, cancellationToken);
     }
 }
-</code></pre></div><p>We can now use the <em>upgraded</em> <code>MockFailCommandInterceptor</code> in our unit test as follows</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#a6e22e>[Fact]</span>
+</code></pre></div><p>We can now use the <em>upgraded</em> <code>MockFailCommandInterceptor</code> in our unit test as follows</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-csharp data-lang=csharp><span style=color:#a6e22e>[Fact]</span>
 <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>async</span> Task AddMovieFails()
 {
     <span style=color:#66d9ef>var</span> dbContext = CreateMovieDbContext(<span style=color:#ae81ff>_</span>keepAliveConnection,
@@ -144,5 +217,87 @@
             Year = <span style=color:#ae81ff>1990</span>
         }));
 }
-</code></pre></div><h2 id=final-thoughts>Final thoughts</h2><p>EF Core Interceptors are not something you would use regularly in your Production code. However, for testing failure scenarios, Interpectors are a nice and easy way to simulate database errors. Note that this is compatible only with relational database providers such as SQL Server. Also note that writing tests to cover failure scenarios alone doesn&rsquo;t guarantee that your application is resilient, but not covering them guarantees unpredictable, generaly <em>ungraceful</em>, behaviour when a dependency fails.</p><p>Keep <em>gracefully</em> dotnetting&mldr;</p></div><footer class=post__footer><div class="post__tags tags clearfix"><svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5.0 11V3C0 1.5.8.8.8.8S1.5.0 3 0h8c1.5.0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 100-6 3 3 0 000 6z"/></svg><ul class=tags__list><li class=tags__item><a class="tags__link btn" href=/tags/ef-core/ rel=tag>ef core</a></li><li class=tags__item><a class="tags__link btn" href=/tags/database/ rel=tag>database</a></li><li class=tags__item><a class="tags__link btn" href=/tags/interceptors/ rel=tag>interceptors</a></li><li class=tags__item><a class="tags__link btn" href=/tags/csharp/ rel=tag>csharp</a></li><li class=tags__item><a class="tags__link btn" href=/tags/.net-core/ rel=tag>.net core</a></li><li class=tags__item><a class="tags__link btn" href=/tags/sql-server/ rel=tag>sql server</a></li><li class=tags__item><a class="tags__link btn" href=/tags/testing/ rel=tag>testing</a></li><li class=tags__item><a class="tags__link btn" href=/tags/unit-test/ rel=tag>unit test</a></li><li class=tags__item><a class="tags__link btn" href=/tags/resiliency/ rel=tag>resiliency</a></li></ul></div></footer></article></main><div class="authorbox clearfix"><figure class=authorbox__avatar><img alt="Lester Sanchez avatar" src=/img/avatar.jpg class=avatar height=90 width=90></figure><div class=authorbox__header><span class=authorbox__name>About Lester Sanchez</span></div><div class=authorbox__description>I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too.</div></div><nav class="pager flex"><div class="pager__item pager__item--prev"><a class=pager__link href=/2021/04/how-to-route-requests-based-on-http-headers-in-asp.net-core/ rel=prev><span class=pager__subtitle>«&#8201;Previous</span><p class=pager__title>How to route requests based on HTTP headers in ASP.NET Core</p></a></div></nav><section class=comments><div id=disqus_thread></div><script type=application/javascript>var disqus_config=function(){};(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('disqus_thread').innerHTML='Disqus comments not available by default when the website is previewed locally.';return}var b=document,a=b.createElement('script');a.async=!0,a.src='//dotnetting.disqus.com/embed.js',a.setAttribute('data-timestamp',+new Date),(b.head||b.body).appendChild(a)})()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></section></div></div><footer class=footer><div class="container footer__container flex"><div class=footer__copyright>&copy; 2021 dotNetting.
-<span class=footer__copyright-credits>Generated with <a href=https://gohugo.io/ rel="nofollow noopener" target=_blank>Hugo</a> and <a href=https://github.com/Vimux/Mainroad/ rel="nofollow noopener" target=_blank>Mainroad</a> theme.</span></div></div></footer></div><script async defer src=/js/menu.js></script></body></html>
+</code></pre></div><h2 id=final-thoughts>Final thoughts</h2>
+<p>EF Core Interceptors are not something you would use regularly in your Production code. However, for testing failure scenarios, Interpectors are a nice and easy way to simulate database errors. Note that this is compatible only with relational database providers such as SQL Server. Also note that writing tests to cover failure scenarios alone doesn&rsquo;t guarantee that your application is resilient, but not covering them guarantees unpredictable, generaly <em>ungraceful</em>, behaviour when a dependency fails.</p>
+<p>Keep <em>gracefully</em> dotnetting&mldr;</p>
+</div>
+<footer class=post__footer>
+<div class="post__tags tags clearfix"><svg class="tags__badge icon icon-tag" width="16" height="16" viewBox="0 0 32 32"><path d="M32 19c0 1-1 2-1 2L21 31s-1 1-2 1-2-1-2-1L2 16c-1-1-1.4-2-1.4-2S0 12.5.0 11V3C0 1.5.8.8.8.8S1.5.0 3 0h8c1.5.0 3 .6 3 .6S15 1 16 2l15 15s1 1 1 2zM7 10a3 3 0 100-6 3 3 0 000 6z"/></svg>
+<ul class=tags__list>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/ef-core/ rel=tag>ef core</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/database/ rel=tag>database</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/interceptors/ rel=tag>interceptors</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/csharp/ rel=tag>csharp</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/.net-core/ rel=tag>.net core</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/sql-server/ rel=tag>sql server</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/testing/ rel=tag>testing</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/unit-test/ rel=tag>unit test</a>
+</li>
+<li class=tags__item>
+<a class="tags__link btn" href=/tags/resiliency/ rel=tag>resiliency</a>
+</li>
+</ul>
+</div>
+</footer>
+</article>
+</main>
+<div class="authorbox clearfix">
+<figure class=authorbox__avatar>
+<img alt="Lester Sanchez avatar" src=/img/avatar.jpg class=avatar height=90 width=90>
+</figure>
+<div class=authorbox__header>
+<span class=authorbox__name>About Lester Sanchez</span>
+</div>
+<div class=authorbox__description>
+I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too.
+</div>
+</div>
+<nav class="pager flex">
+<div class="pager__item pager__item--prev">
+<a class=pager__link href=/2021/04/how-to-route-requests-based-on-http-headers-in-asp.net-core/ rel=prev>
+<span class=pager__subtitle>«&#8201;Previous</span>
+<p class=pager__title>How to route requests based on HTTP headers in ASP.NET Core</p>
+</a>
+</div>
+<div class="pager__item pager__item--next">
+<a class=pager__link href=/2022/01/how-to-use-visual-studio-without-docker-desktop-to-debug-a-.net-core-application-running-in-a-container-inside-wsl/ rel=next>
+<span class=pager__subtitle>Next&#8201;»</span>
+<p class=pager__title>How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL</p>
+</a>
+</div>
+</nav>
+<section class=comments>
+<div id=disqus_thread></div>
+<script type=application/javascript>var disqus_config=function(){};(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('disqus_thread').innerHTML='Disqus comments not available by default when the website is previewed locally.';return}var b=document,a=b.createElement('script');a.async=!0,a.src='//dotnetting.disqus.com/embed.js',a.setAttribute('data-timestamp',+new Date),(b.head||b.body).appendChild(a)})()</script>
+<noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript>
+<a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a>
+</section>
+</div>
+</div>
+<footer class=footer>
+<div class="container footer__container flex">
+<div class=footer__copyright>
+&copy; 2022 dotNetting.
+<span class=footer__copyright-credits>Generated with <a href=https://gohugo.io/ rel="nofollow noopener" target=_blank>Hugo</a> and <a href=https://github.com/Vimux/Mainroad/ rel="nofollow noopener" target=_blank>Mainroad</a> theme.</span>
+</div>
+</div>
+</footer>
+</div>
+<script async defer src=/js/menu.js></script>
+</body>
+</html>
