@@ -2,6 +2,7 @@
 title: "Testing: Simulate database failures using EF Core Interceptors"
 date: 2021-05-06
 description: "This post shows how to simulate failure scenarios using Entity Framework Core Interceptors. This technique enables interception and modification of EF Core operations, including low-level database operations. This is compatible with SQL Server and other relational database providers."
+summary: "The post explains how to use **EF Core Interceptors** to simulate database failures, enabling tests for application resiliency. It introduces a custom `MockFailCommandInterceptor` that selectively throws exceptions during specific database operations, such as `INSERT`, to test failure scenarios. This approach ensures that failure handling is thoroughly tested."
 tags: ["ef core", "database", "interceptors", "csharp", ".net core", "sql server", "testing", "unit test", "resiliency"]
 draft: false
 ---

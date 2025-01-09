@@ -2,6 +2,7 @@
 title: "How to do logging in .NET AWS Lambda functions"
 date: 2023-05-25
 description: "This post shows four different options to write logs in AWS Lambda functions implemented in .NET and discuses pros and cons of each of them, including examples."
+summary: "The article outlines four ways to send logs to AWS Cloudwatch from a .NET Lambda function. It covers `ILambdaContext.Logger`, a basic option for simple logging; `LambdaILogger`, which integrates with Microsoft's `ILogger` for richer features but has limitations with parameter serialization; `Serilog`, a highly customizable library for structured logging and control over log formats; and `AWS Lambda Powertools`, a straightforward utility tailored for **AWS Lambda** with built-in X-Ray trace correlation. The choice between these methods depends on the need for simplicity or advanced customization."
 tags: ["dotnet", "csharp", "aws-lambda", "cloudwatch", "observability", "logging", "powertools", "serilog", "ilogger"]
 draft: false
 ---

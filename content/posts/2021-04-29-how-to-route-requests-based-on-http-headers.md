@@ -2,6 +2,7 @@
 title: "How to route requests based on HTTP headers in ASP.NET Core"
 date: 2021-04-29
 description: "This post shows how to route requests to specific actions in ASP.NET Core via implementing IActionConstraint and decorating actions and controllers with an Attribute to indicate the value of a header to determine the valid route to follow."
+summary: "The blog post addresses how to route API requests that use the same HTTP verb and path but differ in behavior based on HTTP header values, such as the `Accept` header for versioning. It introduces a custom `Accepts` attribute in **ASP.NET Core**, which implements the `IActionConstraint` interface to direct requests to specific actions based on header values. This approach can be extended to handle any scenario where routing depends on header values, beyond versioning."
 tags: ["asp.net core", "csharp", "routing", "http headers"]
 draft: false
 ---

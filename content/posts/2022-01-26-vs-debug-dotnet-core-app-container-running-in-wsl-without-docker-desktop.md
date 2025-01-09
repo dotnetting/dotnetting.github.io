@@ -2,6 +2,7 @@
 title: "How to use Visual Studio without Docker Desktop to debug a .NET Core application running in a container inside WSL"
 date: 2022-01-26
 description: "This post shows how to set up a Windows development environment to run and debug .NET Core applications as containers inside WSL without requiring Docker Desktop installed on the host (Windows) development machine."
+summary: "This post provides a step-by-step guide to setting up a development environment that allows debugging .NET Core applications inside a Docker container running on **WSL**, using Visual Studio, without relying on **Docker Desktop**. It outlines the prerequisites, the process of installing and configuring Docker tools on WSL2, enabling SSH for remote debugging, and attaching Visual Studio to the running container for debugging. While this approach requires manual setup, it offers a cost-effective alternative to Docker Desktop for teams who prefer or need to avoid its licensing fees."
 tags: ["docker", ".net core", "wsl", "wsl2", "docker desktop", "linux", "windows", "vs2022", "remote debugging", "visual studio"]
 draft: false
 ---
