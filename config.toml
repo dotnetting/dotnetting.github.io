@@ -1,18 +1,19 @@
 baseURL = "https://dotnetting.net/"
-languageCode = "en-us"
+languageCode = "en-gb"
 title = "dotNetting"
-paginate = "10" 
 theme="mainroad"
-disqusShortname = "dotnetting"
-googleAnalytics = "G-VGT0SY9PT3" # Enable Google Analytics by entering your tracking id
+
+[services.disqus]
+  shortname = "dotnetting"
+
+[services.googleAnalytics]
+  ID = "G-VGT0SY9PT3"
+
+[pagination]
+  pagerSize = "10" 
 
 [permalinks]
   posts = "/:year/:month/:title/"
-
-[Author] # Used in authorbox
-  name = "Lester Sanchez"
-  bio = "I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too."
-  avatar = "img/avatar.jpg"
 
 [Params]
   description = "This blog is about Software Engineering, Cloud Computing, Distributed Systems and .NET/C#" # Site description. Used in meta description
@@ -33,6 +34,11 @@ googleAnalytics = "G-VGT0SY9PT3" # Enable Google Analytics by entering your trac
   googleFontsLink = "https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700" # Load Google Fonts
   customCSS = ["css/custom.css"] # Include custom CSS files
   # customJS = ["js/custom.js"] # Include custom JS files
+
+[Params.Author] # Used in authorbox
+  name = "Lester Sanchez"
+  bio = "I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too."
+  avatar = "img/avatar.jpg"
 
 [Params.style.vars]
   highlightColor = "#e22d30" # Override highlight color
