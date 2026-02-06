@@ -37,7 +37,7 @@ theme="mainroad"
 
 [Params.Author] # Used in authorbox
   name = "Lester Sanchez"
-  bio = "I am passionate about Computer Science and Cloud Technologies, working as full-time Software Engineer primarily on the ASP.NET stack. I have worked with different frameworks and languages during the last 15 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too."
+  bio = "I am passionate about Computer Science and Cloud Technologies, recently exploring and experimenting with Agentic Engineering. I have worked with different frameworks and languages during the last 20 years, but .NET/C# have been the most beloved pair. I started this blog to share some of my findings, that have been useful to me at some point of my career. I hope they can be useful for you too."
   avatar = "img/avatar.jpg"
 
 [Params.style.vars]
@@ -51,7 +51,7 @@ theme="mainroad"
 [Params.logo]
   # image = "img/placeholder.png" # Logo image. Path relative to "static"
   title = "dotNetting" # Logo title, otherwise will use site title
-  subtitle = "netting the cloud with C#" # Logo subtitle
+  subtitle = "netting the cloud with C# and AI" # Logo subtitle
 
 [Params.sidebar]
   home = "right" # Configure layout for home page
