@@ -31,10 +31,10 @@ while :; do cat PROMPT.md | claude; done
 ```
 
 This technique is supported by 4 pillars:
-	- The agent; consisting of LLMs (the brain) + Tools (the muscle).
-	- The specs; describing what the agent must build, and how. They are referenced in the prompt.
-	- The implementation plan; a living document, created from the specs, and used by the agent to keep track of its progress through iterations. This should be a clear breakdown of phases and tasks, like a TODO list, for agent to pick items from on each iteration. The plan is also referenced in the prompt.
-	- The prompt; generic instructions to the agent on how it should operate regarding picking items from the plan, and updating the plan with the outcome of each iteration. Here you should try to infuse some determinism to the agent, by being as prescriptive as you can.
+- The agent; consisting of LLMs (the brain) + Tools (the muscle).
+- The specs; describing what the agent must build, and how. They are referenced in the prompt.
+- The implementation plan; a living document, created from the specs, and used by the agent to keep track of its progress through iterations. This should be a clear breakdown of phases and tasks, like a TODO list, for agent to pick items from on each iteration. The plan is also referenced in the prompt.
+- The prompt; generic instructions to the agent on how it should operate regarding picking items from the plan, and updating the plan with the outcome of each iteration. Here you should try to infuse some determinism to the agent, by being as prescriptive as you can.
 
 These pillars are not different from those supporting the manual interactions with an agent; we just put them together, in a cohesive and structured way, to make the loop work autonomously.
 
