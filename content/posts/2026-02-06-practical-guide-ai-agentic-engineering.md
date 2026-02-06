@@ -4,7 +4,7 @@ date: 2026-02-06
 description: "A practical guide to Agentic Engineering to remove the bottleneck that causes the human being in the loop"
 summary: "The human IN the loop is a bottleneck. The human ON the loop is a multiplier. A practical guide on how to unblock agents without compromising on software quality. **Agentic Loops** (aka Ralph Loops) explained from First Principles with tips from personal experience."
 tags: ["ai", "agentic-engineering", "claude-code", "copilot"]
-draft: true
+draft: false
 ---
 
 
